@@ -6,7 +6,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.dao.id.EntityID
 import java.time.Instant
 import java.util.UUID
 
@@ -16,7 +16,7 @@ class NotificationRepository {
 
     suspend fun create(notification: Notification): Notification = dbQuery {
         NotificationsTable.insert {
-            it[id] = notification.id
+            it[id] = EntityID(notification.id, NotificationsTable)
             it[type] = notification.type.name
             it[recipient] = notification.recipient
             it[templateId] = notification.templateId
@@ -40,14 +40,13 @@ class NotificationRepository {
     }
 
     suspend fun findById(id: UUID): Notification? = dbQuery {
-        NotificationsTable.selectAll()
-            .where { NotificationsTable.id eq id }
+        NotificationsTable.select { NotificationsTable.id eq EntityID(id, NotificationsTable) }
             .map { rowToNotification(it) }
             .singleOrNull()
     }
 
     suspend fun update(notification: Notification): Notification = dbQuery {
-        NotificationsTable.update({ NotificationsTable.id eq notification.id }) {
+        NotificationsTable.update({ NotificationsTable.id eq EntityID(notification.id, NotificationsTable) }) {
             it[status] = notification.status.name
             it[updatedAt] = Instant.now()
             it[attempts] = notification.attempts
@@ -61,8 +60,7 @@ class NotificationRepository {
     }
 
     suspend fun findPendingNotifications(limit: Int = 100): List<Notification> = dbQuery {
-        NotificationsTable.selectAll()
-            .where {
+        NotificationsTable.select {
                 (NotificationsTable.status eq NotificationStatus.QUEUED.name) or
                         (NotificationsTable.status eq NotificationStatus.PENDING.name)
             }
@@ -71,8 +69,7 @@ class NotificationRepository {
     }
 
     suspend fun findScheduledNotifications(now: Instant): List<Notification> = dbQuery {
-        NotificationsTable.selectAll()
-            .where {
+        NotificationsTable.select {
                 (NotificationsTable.status eq NotificationStatus.QUEUED.name) and
                         (NotificationsTable.scheduledAt lessEq now)
             }

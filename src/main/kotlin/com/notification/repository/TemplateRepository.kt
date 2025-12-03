@@ -11,15 +11,13 @@ import java.time.Instant
 class TemplateRepository {
 
     suspend fun findById(id: String): Template? = dbQuery {
-        TemplatesTable.selectAll()
-            .where { (TemplatesTable.id eq id) and (TemplatesTable.active eq true) }
+        TemplatesTable.select { (TemplatesTable.id eq id) and (TemplatesTable.active eq true) }
             .map { rowToTemplate(it) }
             .singleOrNull()
     }
 
     suspend fun findByType(type: NotificationType): List<Template> = dbQuery {
-        TemplatesTable.selectAll()
-            .where { (TemplatesTable.type eq type.name) and (TemplatesTable.active eq true) }
+        TemplatesTable.select { (TemplatesTable.type eq type.name) and (TemplatesTable.active eq true) }
             .map { rowToTemplate(it) }
     }
 

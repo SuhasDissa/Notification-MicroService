@@ -1,10 +1,10 @@
 # Multi-stage build for minimal image size
-FROM gradle:8-jdk17 AS build
+FROM gradle:8.5-jdk21 AS build
 WORKDIR /app
 COPY . .
 RUN gradle clean build --no-daemon -x test
 
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 # Copy the built JAR
