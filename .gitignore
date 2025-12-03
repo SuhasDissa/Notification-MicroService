@@ -37,3 +37,5 @@ application-local.conf
 *.pem
 *.p12
 secrets/
+
+local.properties
