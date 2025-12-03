@@ -1,0 +1,65 @@
+ktor:
+  application:
+    modules:
+      - com.notification.ApplicationKt.module
+  deployment:
+    port: 8080
+    host: 0.0.0.0
+    watch:
+      - classes
+      - resources
+
+database:
+  url: "jdbc:postgresql://localhost:5432/notifications"
+  driver: "org.postgresql.Driver"
+  user: "notif_user"
+  password: "notif_pass"
+  maxPoolSize: 10
+  minIdle: 2
+  connectionTimeout: 30000
+
+kafka:
+  bootstrapServers: "localhost:9092"
+  groupId: "notification-service"
+  topic: "notifications"
+  enableAutoCommit: false
+
+providers:
+  email:
+    type: "smtp"
+    host: "smtp.gmail.com"
+    port: 587
+    username: ""
+    password: ""
+    from: "noreply@notification-service.com"
+    enabled: true
+  sms:
+    type: "twilio"
+    accountSid: ""
+    authToken: ""
+    fromNumber: ""
+    enabled: false
+  push:
+    type: "fcm"
+    serverKey: ""
+    enabled: false
+
+notification:
+  maxRetries: 3
+  retryDelays: [1000, 5000, 15000]
+  circuitBreaker:
+    failureThreshold: 5
+    successThreshold: 2
+    timeout: 30000
+
+security:
+  jwt:
+    secret: "change-this-secret-in-production"
+    issuer: "notification-service"
+    audience: "notification-clients"
+    realm: "Notification Service"
+    validityMs: 3600000
+
+monitoring:
+  prometheus:
+    enabled: true
